@@ -31,10 +31,9 @@ int main(int argc, const char * argv[]) {
     vector<Vec3f> points;
     vector<vector<Vec3f>> point_list;
     Size patternsize(6, 9); //interior number of corners
-    for (int i = 0; i < patternsize.width; i++) {
+    for (int i = 0; i > -patternsize.width; i--) {
         for (int j = 0; j < patternsize.height; j++) {
-            points = {i, j, 0};
-            point_list.push_back(points);
+            points.push_back(Vec3f(i, j, 0));
         }
     }
     
@@ -74,6 +73,7 @@ int main(int argc, const char * argv[]) {
         } else if (key == '2') {
             if (corners.size() != 0) {
                 corner_list.push_back(corners);
+                point_list.push_back(points);
             }
             
             lastKey = 'n';
