@@ -77,6 +77,53 @@ int main(int argc, const char * argv[]) {
             }
             
             lastKey = 'n';
+        } else if (key == '3') {
+            if (corner_list.size() >= 5) {
+                Mat cameraMatrix = Mat::zeros(3, 3, CV_64FC1);//todo limitations
+                cameraMatrix.at<double>(0, 0) = 0;
+                cameraMatrix.at<double>(0, 1) = 0;
+                cameraMatrix.at<double>(0, 2) = 1;
+                cameraMatrix.at<double>(1, 0) = 0;
+                cameraMatrix.at<double>(1, 1) = 1;
+                cameraMatrix.at<double>(1, 2) = src.rows/2;
+                cameraMatrix.at<double>(2, 0) = 1;
+                cameraMatrix.at<double>(2, 1) = 0;
+                cameraMatrix.at<double>(2, 2) = src.cols/2;
+                
+                Mat distCoeffs, rvecs, tvecs, std_deviations_intrinsic, std_deviations_extrinsic, per_view_errors;
+                // print some variables before the camera caliberation
+                for(int i = 0; i < cameraMatrix.rows; i++) {
+                    for(int j = 0; j < cameraMatrix.cols; j++) {
+                        printf("camera matrix %f\n", cameraMatrix.at<double>(i, j));
+                    }
+                }
+                for(int i = 0; i < distCoeffs.rows; i++) {
+                    for(int j = 0; j < distCoeffs.cols; j++) {
+                        printf("distortion coeeficients %f\n", distCoeffs.at<double>(i, j));
+                    }
+                }
+                
+                // do camera caliberation
+                double reprojection_error = calibrateCamera(point_list, corner_list, src.size(), cameraMatrix, distCoeffs, rvecs, tvecs, std_deviations_intrinsic, std_deviations_extrinsic, per_view_errors);
+                
+                // print some variables after the camera caliberation
+                for(int i = 0; i < cameraMatrix.rows; i++) {
+                    for(int j = 0; j < cameraMatrix.cols; j++) {
+                        printf("camera matrix %f\n", cameraMatrix.at<double>(i, j));
+                    }
+                }
+                for(int i = 0; i < distCoeffs.rows; i++) {
+                    for(int j = 0; j < distCoeffs.cols; j++) {
+                        printf("distortion coeeficients %f\n", distCoeffs.at<double>(i, j));
+                    }
+                }
+                printf("the reprojection error is: %f\n", reprojection_error);
+                
+            } else {
+                printf("You have to specifiy atleast 5 images for camera caliberation.");
+            }
+           
+            lastKey = 'n';
         }
         
         imshow("video", dst);
