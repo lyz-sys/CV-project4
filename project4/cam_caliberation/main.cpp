@@ -24,7 +24,7 @@ int main(int argc, const char * argv[]) {
     namedWindow("video");
     Mat src, dst;
     char lastKey = 's';
-
+    
     // initialize some variables
     vector<Point2f> corners;
     vector<vector<Point2f>> corner_list;
@@ -51,22 +51,24 @@ int main(int argc, const char * argv[]) {
         if (key == -1) {
             key = lastKey;
         }
-
+        
         if (key == 'q') {
             break;
         } else if (key == '1') {
             Mat gray;
             cvtColor(src, gray, COLOR_BGR2GRAY);
             //CALIB_CB_FAST_CHECK saves a lot of time on images that do not contain any chessboard corners
-            bool patternfound = findChessboardCorners(gray, patternsize, corners,
-                    CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE
-                    + CALIB_CB_FAST_CHECK);
+            vector<Point2f> tmp_corners;
+            bool patternfound = findChessboardCorners(gray, patternsize, tmp_corners,
+                                                      CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE
+                                                      + CALIB_CB_FAST_CHECK);
             if (patternfound) {
-                cornerSubPix(gray, corners, Size(11, 11), Size(-1, -1),
+                cornerSubPix(gray, tmp_corners, Size(11, 11), Size(-1, -1),
                              TermCriteria(TermCriteria::MAX_ITER + TermCriteria::EPS, 30, 0.1));
-                drawChessboardCorners(dst, patternsize, Mat(corners), patternfound);
-                printf("the total number of corners: %lu\n", corners.size());
-                printf("the first corner: (%f, %f)", corners[0].x, corners[0].y);
+                drawChessboardCorners(dst, patternsize, Mat(tmp_corners), patternfound);
+                printf("the total number of corners: %lu\n", tmp_corners.size());
+                printf("the first corner: (%f, %f)", tmp_corners[0].x, tmp_corners[0].y);
+                corners = tmp_corners;
             }
             lastKey = '1';
         } else if (key == '2') {
@@ -74,7 +76,7 @@ int main(int argc, const char * argv[]) {
                 corner_list.push_back(corners);
             }
             
-            lastKey = '2';
+            lastKey = 'n';
         }
         
         imshow("video", dst);
