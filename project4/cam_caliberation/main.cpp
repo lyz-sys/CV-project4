@@ -6,8 +6,6 @@
 //
 
 #include <iostream>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <filesystem>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -18,7 +16,7 @@ using namespace std;
 using namespace cv;
 
 int main(int argc, const char * argv[]) {
-    mkdir("./caliberation_images/", 0777);
+    std::filesystem::create_directory("./caliberation_images/");
     
     VideoCapture cap(1); // 0 for IPhone camer, and 1 for built in Mac webcam
     if(!cap.isOpened()) {
@@ -88,7 +86,7 @@ int main(int argc, const char * argv[]) {
             lastKey = 'n';
         } else if (key == '3') {
             if (corner_list.size() >= 5) {
-                Mat cameraMatrix = Mat::zeros(3, 3, CV_64FC1);//todo limitations
+                Mat cameraMatrix = Mat::zeros(3, 3, CV_64FC1);
                 cameraMatrix.at<double>(0, 0) = 0;
                 cameraMatrix.at<double>(0, 1) = 0;
                 cameraMatrix.at<double>(0, 2) = 1;
@@ -131,7 +129,7 @@ int main(int argc, const char * argv[]) {
                 printf("You have to specifiy atleast 5 images for camera caliberation.");
             }
             printf("currently has %lu pre-trained images\n", corner_list.size());
-            lastKey = 'n';
+            lastKey = 'n'; //todo: write matrix to a file
         }
         
         imshow("video", dst);
