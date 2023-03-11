@@ -6,6 +6,9 @@
 //
 
 #include <iostream>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <filesystem>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/calib3d.hpp>
@@ -15,6 +18,8 @@ using namespace std;
 using namespace cv;
 
 int main(int argc, const char * argv[]) {
+    mkdir("./caliberation_images/", 0777);
+    
     VideoCapture cap(1); // 0 for IPhone camer, and 1 for built in Mac webcam
     if(!cap.isOpened()) {
         printf("Unable to open video device");
@@ -26,6 +31,7 @@ int main(int argc, const char * argv[]) {
     char lastKey = 's';
     
     // initialize some variables
+    Mat tmp_caliberation_img;
     vector<Point2f> corners;
     vector<vector<Point2f>> corner_list;
     vector<Vec3f> points;
@@ -33,7 +39,7 @@ int main(int argc, const char * argv[]) {
     Size patternsize(6, 9); //interior number of corners
     for (int i = 0; i > -patternsize.width; i--) {
         for (int j = 0; j < patternsize.height; j++) {
-            points.push_back(Vec3f(i, j, 0));
+            points.push_back(Vec3f(j, i, 0));
         }
     }
     
@@ -68,14 +74,17 @@ int main(int argc, const char * argv[]) {
                 printf("the total number of corners: %lu\n", tmp_corners.size());
                 printf("the first corner: (%f, %f)", tmp_corners[0].x, tmp_corners[0].y);
                 corners = tmp_corners;
+                tmp_caliberation_img = src.clone();
             }
-            lastKey = '1';
+            
+            lastKey = 'n';
         } else if (key == '2') {
             if (corners.size() != 0) {
                 corner_list.push_back(corners);
                 point_list.push_back(points);
+                imwrite("./caliberation_images/" + to_string(corner_list.size()) + ".jpg", tmp_caliberation_img);
             }
-            
+
             lastKey = 'n';
         } else if (key == '3') {
             if (corner_list.size() >= 5) {
@@ -118,16 +127,16 @@ int main(int argc, const char * argv[]) {
                     }
                 }
                 printf("the reprojection error is: %f\n", reprojection_error);
-                
             } else {
                 printf("You have to specifiy atleast 5 images for camera caliberation.");
             }
-           
+            printf("currently has %lu pre-trained images\n", corner_list.size());
             lastKey = 'n';
         }
         
         imshow("video", dst);
     }
     
+    std::filesystem::remove_all("./caliberation_images/");
     return 0;
 }
