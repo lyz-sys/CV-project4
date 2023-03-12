@@ -105,7 +105,7 @@ int main(int argc, const char * argv[]) {
                                                       CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE
                                                       + CALIB_CB_FAST_CHECK);
             if (patternfound) {
-                cornerSubPix(gray, corners, Size(11, 11), Size(-1, -1),
+                cornerSubPix(gray, corners, Size(5, 5), Size(-1, -1),
                              TermCriteria(TermCriteria::MAX_ITER + TermCriteria::EPS, 30, 0.1));
                 drawChessboardCorners(dst, patternsize, Mat(corners), patternfound);
                 printf("the total number of corners: %lu\n", corners.size());
@@ -114,13 +114,18 @@ int main(int argc, const char * argv[]) {
                 solvePnP(points, corners, camera_matrix, dist_coefficients, rvecs, tvecs);
                 
                 // get four corners of the chessboard, and draw circles accordingly
-                // todo: after camer caliberated; add four more corner points
                 vector<Point2f> img_points;
                 vector<Vec3f> obj_points;
-                obj_points.push_back(Vec3f(5, -5, 0));
-                
+                obj_points.push_back(Vec3f(-1, 1, 0));
+                obj_points.push_back(Vec3f(9, 1, 0));
+                obj_points.push_back(Vec3f(-1, 9, 0));
+                obj_points.push_back(Vec3f(9, 9, 0));
+
                 projectPoints(obj_points, rvecs, tvecs, camera_matrix, dist_coefficients, img_points);
-                circle(dst, img_points[0], 50, Scalar(255, 0, 0));
+                circle(dst, img_points[0], 10, Scalar(255, 0, 0), 5);
+                circle(dst, img_points[1], 10, Scalar(255, 0, 0), 5);
+                circle(dst, img_points[2], 10, Scalar(255, 0, 0), 5);
+                circle(dst, img_points[3], 10, Scalar(255, 0, 0), 5);
             }
             
             lastKey = '5';
