@@ -11,6 +11,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/imgproc.hpp>
+#include "utils.hpp"
 
 using namespace std;
 using namespace cv;
@@ -18,7 +19,7 @@ using namespace cv;
 int main(int argc, const char * argv[]) {
     std::filesystem::create_directory("./caliberation_images/");
     
-    VideoCapture cap(1); // 0 for IPhone camer, and 1 for built in Mac webcam
+    VideoCapture cap(0);
     if(!cap.isOpened()) {
         printf("Unable to open video device");
         return 0;
@@ -26,7 +27,7 @@ int main(int argc, const char * argv[]) {
     
     namedWindow("video");
     Mat src, dst;
-    char lastKey = 's';
+    char lastKey = 'n';
     
     // initialize some variables
     Mat tmp_caliberation_img;
@@ -70,7 +71,7 @@ int main(int argc, const char * argv[]) {
                              TermCriteria(TermCriteria::MAX_ITER + TermCriteria::EPS, 30, 0.1));
                 drawChessboardCorners(dst, patternsize, Mat(tmp_corners), patternfound);
                 printf("the total number of corners: %lu\n", tmp_corners.size());
-                printf("the first corner: (%f, %f)", tmp_corners[0].x, tmp_corners[0].y);
+                printf("the first corner: (%f, %f)\n", tmp_corners[0].x, tmp_corners[0].y);
                 corners = tmp_corners;
                 tmp_caliberation_img = src.clone();
             }
@@ -125,16 +126,19 @@ int main(int argc, const char * argv[]) {
                     }
                 }
                 printf("the reprojection error is: %f\n", reprojection_error);
+                save_cam_caliberation_info(cameraMatrix, distCoeffs, rvecs, tvecs);
             } else {
                 printf("You have to specifiy atleast 5 images for camera caliberation.");
             }
             printf("currently has %lu pre-trained images\n", corner_list.size());
-            lastKey = 'n'; //todo: write matrix to a file
+            
+            lastKey = 'n';
         }
         
         imshow("video", dst);
     }
     
-    std::filesystem::remove_all("./caliberation_images/");
+    // todo: potentially destroy data created in program running
+//    std::filesystem::remove_all("./caliberation_images/");
     return 0;
 }
