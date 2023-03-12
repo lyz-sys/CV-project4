@@ -19,7 +19,7 @@ using namespace cv;
 int main(int argc, const char * argv[]) {
     std::filesystem::create_directory("./caliberation_images/");
     
-    VideoCapture cap(0);
+    VideoCapture cap(1);
     if(!cap.isOpened()) {
         printf("Unable to open video device");
         return 0;
@@ -29,19 +29,20 @@ int main(int argc, const char * argv[]) {
     Mat src, dst;
     char lastKey = 'n';
     
-    // initialize some variables
+    // initialize some variables for chessboard pattern
     Mat tmp_caliberation_img;
     vector<Point2f> corners;
-    vector<vector<Point2f>> corner_list;
-    vector<Vec3f> points;
-    vector<vector<Vec3f>> point_list;
-    Size patternsize(6, 9); //interior number of corners
-    for (int i = 0; i > -patternsize.width; i--) {
+    vector<vector<Point2f>> img_corners_list;
+    vector<Point3f> points;
+    vector<vector<Point3f>> obj_corners_list;
+    Size patternsize(6, 9); // hard coded interior number of corners
+    for (int i = 0; i < patternsize.width; i++) {
         for (int j = 0; j < patternsize.height; j++) {
-            points.push_back(Vec3f(j, i, 0));
+            points.push_back(Point3f(j, -i, 0));
         }
     }
-    
+    TermCriteria termcrit(TermCriteria::COUNT | TermCriteria::EPS, 20, 0.03);
+
     while (true) {
         cap >> src;
         dst = src.clone();
@@ -49,7 +50,7 @@ int main(int argc, const char * argv[]) {
             printf("src is empty\n");
             break;
         }
-        
+
         // see if there is a waiting keystroke
         char key = waitKey(25);
         if (key == -1) {
@@ -61,76 +62,52 @@ int main(int argc, const char * argv[]) {
         } else if (key == '1') {
             Mat gray;
             cvtColor(src, gray, COLOR_BGR2GRAY);
-            //CALIB_CB_FAST_CHECK saves a lot of time on images that do not contain any chessboard corners
-            vector<Point2f> tmp_corners;
-            bool patternfound = findChessboardCorners(gray, patternsize, tmp_corners,
-                                                      CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE
-                                                      + CALIB_CB_FAST_CHECK);
+            bool patternfound = findChessboardCorners(gray, patternsize, corners,            CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK);
             if (patternfound) {
-                cornerSubPix(gray, tmp_corners, Size(11, 11), Size(-1, -1),
-                             TermCriteria(TermCriteria::MAX_ITER + TermCriteria::EPS, 30, 0.1));
-                drawChessboardCorners(dst, patternsize, Mat(tmp_corners), patternfound);
-                printf("the total number of corners: %lu\n", tmp_corners.size());
-                printf("the first corner: (%f, %f)\n", tmp_corners[0].x, tmp_corners[0].y);
-                corners = tmp_corners;
+                cornerSubPix(gray, corners, Size(5, 5), Size(-1, -1), termcrit);
+                drawChessboardCorners(dst, patternsize, Mat(corners), patternfound);
+                printf("the total number of corners: %lu\n", corners.size());
+                printf("the first corner: (%f, %f)\n", corners[0].x, corners[0].y);
                 tmp_caliberation_img = src.clone();
             }
-            
             lastKey = 'n';
         } else if (key == '2') {
             if (corners.size() != 0) {
-                corner_list.push_back(corners);
-                point_list.push_back(points);
-                imwrite("./caliberation_images/" + to_string(corner_list.size()) + ".jpg", tmp_caliberation_img);
+                img_corners_list.push_back(corners);
+                obj_corners_list.push_back(points);
+                cout << "print corners' image coords:" << endl;
+                cout << corners << endl;
+                cout << "print coeners' object coords:" << endl;
+                cout << points << endl;
+                imwrite("./caliberation_images/" + to_string(img_corners_list.size()) + ".jpg", tmp_caliberation_img);
             }
-
+            printf("currently has %lu pre-trained images\n", img_corners_list.size());
             lastKey = 'n';
         } else if (key == '3') {
-            if (corner_list.size() >= 5) {
-                Mat cameraMatrix = Mat::zeros(3, 3, CV_64FC1);
-                cameraMatrix.at<double>(0, 0) = 0;
-                cameraMatrix.at<double>(0, 1) = 0;
-                cameraMatrix.at<double>(0, 2) = 1;
-                cameraMatrix.at<double>(1, 0) = 0;
-                cameraMatrix.at<double>(1, 1) = 1;
-                cameraMatrix.at<double>(1, 2) = src.rows/2;
-                cameraMatrix.at<double>(2, 0) = 1;
-                cameraMatrix.at<double>(2, 1) = 0;
-                cameraMatrix.at<double>(2, 2) = src.cols/2;
+            if (img_corners_list.size() >= 5) {
+                Mat camera_matrix = Mat::eye(3, 3, CV_64FC1);
+                camera_matrix.at<double>(0, 2) = src.cols/2;
+                camera_matrix.at<double>(1, 2) = src.rows/2;
                 
-                Mat distCoeffs, rvecs, tvecs, std_deviations_intrinsic, std_deviations_extrinsic, per_view_errors;
+                Mat dist_coefficients, rvecs, tvecs, std_deviations_intrinsic, std_deviations_extrinsic, per_view_errors;
                 // print some variables before the camera caliberation
-                for(int i = 0; i < cameraMatrix.rows; i++) {
-                    for(int j = 0; j < cameraMatrix.cols; j++) {
-                        printf("camera matrix %f\n", cameraMatrix.at<double>(i, j));
-                    }
-                }
-                for(int i = 0; i < distCoeffs.rows; i++) {
-                    for(int j = 0; j < distCoeffs.cols; j++) {
-                        printf("distortion coeeficients %f\n", distCoeffs.at<double>(i, j));
-                    }
-                }
-                
+                printf("Initial camera matrix is:\n");
+                cout << camera_matrix << endl;
+                printf("Initial distortion coefficients  is:\n");
+                cout << dist_coefficients << endl;
                 // do camera caliberation
-                double reprojection_error = calibrateCamera(point_list, corner_list, src.size(), cameraMatrix, distCoeffs, rvecs, tvecs, std_deviations_intrinsic, std_deviations_extrinsic, per_view_errors);
-                
+                double reprojection_error = calibrateCamera(obj_corners_list, img_corners_list, src.size(), camera_matrix, dist_coefficients, rvecs, tvecs, std_deviations_intrinsic, std_deviations_extrinsic, per_view_errors, CALIB_FIX_ASPECT_RATIO, termcrit);
                 // print some variables after the camera caliberation
-                for(int i = 0; i < cameraMatrix.rows; i++) {
-                    for(int j = 0; j < cameraMatrix.cols; j++) {
-                        printf("camera matrix %f\n", cameraMatrix.at<double>(i, j));
-                    }
-                }
-                for(int i = 0; i < distCoeffs.rows; i++) {
-                    for(int j = 0; j < distCoeffs.cols; j++) {
-                        printf("distortion coeeficients %f\n", distCoeffs.at<double>(i, j));
-                    }
-                }
-                printf("the reprojection error is: %f\n", reprojection_error);
-                save_cam_caliberation_info(cameraMatrix, distCoeffs, rvecs, tvecs);
+                printf("Caliberated camera matrix is:\n");
+                cout << camera_matrix << endl;
+                printf("Caliberated distortion coefficients is:\n");
+                cout << dist_coefficients << endl;
+                cout << "the reprojection error is: " << reprojection_error << endl;
+                save_cam_caliberation_info(camera_matrix, dist_coefficients, rvecs, tvecs);
             } else {
-                printf("You have to specifiy atleast 5 images for camera caliberation.");
+                printf("You have to specifiy atleast 5 images for camera caliberation.\n");
+                printf("currently has %lu pre-trained images\n", img_corners_list.size());
             }
-            printf("currently has %lu pre-trained images\n", corner_list.size());
             
             lastKey = 'n';
         }
@@ -139,6 +116,6 @@ int main(int argc, const char * argv[]) {
     }
     
     // todo: potentially destroy data created in program running
-//    std::filesystem::remove_all("./caliberation_images/");
+    //    std::filesystem::remove_all("./caliberation_images/");
     return 0;
 }
