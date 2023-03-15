@@ -92,9 +92,9 @@ int main(int argc, const char * argv[]) {
             float center_x = 2;
             float center_y = -2;
             float center_z = 2;
-            float axe_height = 5;
+            float axe_height = 10;
             float axe_body_width = .5;
-            float axe_bar_width = 2;
+            float axe_bar_width = 8;
             float axe_bar_height = 3;
             
             // axe's body
