@@ -16,6 +16,7 @@
 using namespace std;
 using namespace cv;
 
+// this program tries to identify the corners using Harris corners detection algorithm.
 int main(int argc, const char * argv[]) {
     VideoCapture cap(1);
     if(!cap.isOpened()) {

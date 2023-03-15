@@ -16,6 +16,7 @@
 using namespace std;
 using namespace cv;
 
+// this program tries to caliberate the camera. Press 2 to record previous caliberation image. Press 3 to caliberate images.
 int main(int argc, const char * argv[]) {
     std::filesystem::create_directory("./caliberation_images/");
     
