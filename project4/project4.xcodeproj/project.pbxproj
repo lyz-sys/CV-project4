@@ -72,6 +72,8 @@
 				CB6B9CF029BA65DB006F21EC /* Config.xcconfig */,
 				CB6B9CF229BAAA82006F21EC /* readme.md */,
 				CB6B9CF329BAAA82006F21EC /* report.md */,
+				CB6CF52329C178430066DEDE /* generals */,
+				CB6B9CF729BAB3C3006F21EC /* include */,
 				CB6B9CE829BA656C006F21EC /* cam_caliberation */,
 				CB6B9CFE29BD7A8E006F21EC /* cam_extra */,
 				CB6B9CE729BA656C006F21EC /* Products */,
@@ -90,9 +92,7 @@
 		CB6B9CE829BA656C006F21EC /* cam_caliberation */ = {
 			isa = PBXGroup;
 			children = (
-				CB6B9CF729BAB3C3006F21EC /* include */,
 				CB6B9CF829BB0ED3006F21EC /* cam_caliberation.entitlements */,
-				CB6B9CF429BAB3B7006F21EC /* utils.cpp */,
 				CB6B9CE929BA656C006F21EC /* main.cpp */,
 			);
 			path = cam_caliberation;
@@ -113,6 +113,14 @@
 				CB6B9CFF29BD7A8E006F21EC /* main.cpp */,
 			);
 			path = cam_extra;
+			sourceTree = "<group>";
+		};
+		CB6CF52329C178430066DEDE /* generals */ = {
+			isa = PBXGroup;
+			children = (
+				CB6B9CF429BAB3B7006F21EC /* utils.cpp */,
+			);
+			path = generals;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

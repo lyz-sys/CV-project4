@@ -72,12 +72,12 @@ int main(int argc, const char * argv[]) {
         // see if there is a waiting keystroke
         char key = waitKey(25);
         
+        vector<Point2f> img_points;
+        vector<Point3f> obj_points;
         if (key == 'q') {
             break;
         } else if (key == '5') {
             if (patternfound) {
-                vector<Point2f> img_points;
-                vector<Point3f> obj_points;
                 obj_points.push_back(Point3f(0, 0, 0));
                 obj_points.push_back(Point3f(10, 0, 0));
                 obj_points.push_back(Point3f(0, -10, 0));
@@ -88,7 +88,57 @@ int main(int argc, const char * argv[]) {
                 line(dst, Point(img_points[0].x, img_points[0].y), Point(img_points[3].x, img_points[3].y), Scalar(255, 0, 0), 5);
             }
         } else if (key == '6') {
+            // we are going to construct an axe.
+            float center_x = 2;
+            float center_y = -2;
+            float center_z = 2;
+            float axe_height = 5;
+            float axe_body_width = .5;
+            float axe_bar_width = 2;
+            float axe_bar_height = 3;
             
+            // axe's body
+            obj_points.push_back(Point3f(center_x - axe_body_width, center_y + axe_body_width, center_z));
+            obj_points.push_back(Point3f(center_x + axe_body_width, center_y - axe_body_width, center_z));
+            obj_points.push_back(Point3f(center_x - axe_body_width, center_y + axe_body_width, center_z + axe_height));
+            obj_points.push_back(Point3f(center_x + axe_body_width, center_y - axe_body_width, center_z + axe_height));
+            
+            obj_points.push_back(Point3f(center_x - axe_body_width, center_y + axe_body_width, center_z));
+            obj_points.push_back(Point3f(center_x - axe_body_width, center_y + axe_body_width, center_z + axe_height));
+            obj_points.push_back(Point3f(center_x + axe_body_width, center_y + axe_body_width, center_z));
+            obj_points.push_back(Point3f(center_x + axe_body_width, center_y + axe_body_width, center_z + axe_height));
+            obj_points.push_back(Point3f(center_x - axe_body_width, center_y - axe_body_width, center_z));
+            obj_points.push_back(Point3f(center_x - axe_body_width, center_y - axe_body_width, center_z + axe_height));
+            obj_points.push_back(Point3f(center_x + axe_body_width, center_y - axe_body_width, center_z));
+            obj_points.push_back(Point3f(center_x + axe_body_width, center_y - axe_body_width, center_z + axe_height));
+            
+            // axe's head
+            obj_points.push_back(Point3f(center_x + axe_body_width, center_y, center_z + axe_height));
+            obj_points.push_back(Point3f(center_x + axe_body_width + axe_bar_width, center_y, center_z + axe_height));
+            obj_points.push_back(Point3f(center_x + axe_body_width + axe_bar_width, center_y, center_z + axe_height));
+            obj_points.push_back(Point3f(center_x + axe_body_width + axe_bar_width, center_y, center_z + axe_bar_height));
+            obj_points.push_back(Point3f(center_x + axe_body_width + axe_bar_width, center_y, center_z + axe_bar_height));
+            obj_points.push_back(Point3f(center_x + axe_body_width, center_y, center_z + axe_bar_height));
+            
+            projectPoints(obj_points, rvecs, tvecs, camera_matrix, dist_coefficients, img_points);
+            
+            int random1, random2, random3;
+            random1 = rand() % 255;
+            random2 = rand() % 255;
+            random3 = rand() % 255;
+            rectangle(dst, Point(img_points[0].x, img_points[0].y), Point(img_points[1].x, img_points[1].y), Scalar(random1, random2, random3), 10);
+            random1 = rand() % 255;
+            random2 = rand() % 255;
+            random3 = rand() % 255;
+            rectangle(dst, Point(img_points[2].x, img_points[2].y), Point(img_points[3].x, img_points[3].y), Scalar(random1, random2, random3), 10);
+            
+            for (int i = 4; i < obj_points.size(); i += 2) {
+                random1 = rand() % 255;
+                random2 = rand() % 255;
+                random3 = rand() % 255;
+
+                line(dst, Point(img_points[i].x, img_points[i].y), Point(img_points[i + 1].x, img_points[i + 1].y), Scalar(random1, random2, random3), 20);
+            }
         }
         
         imshow("video", dst);
