@@ -17,7 +17,7 @@ using namespace std;
 using namespace cv;
 
 int main(int argc, const char * argv[]) {
-    VideoCapture cap(1);
+    VideoCapture cap(0);
     if(!cap.isOpened()) {
         printf("Unable to open video device");
         return 0;
@@ -53,9 +53,9 @@ int main(int argc, const char * argv[]) {
             Size patternsize(6, 9); //interior number of corners
             vector<Point2f> corners;
             vector<Vec3f> points;
-            for (int i = 0; i > -patternsize.width; i--) {
-                for (int j = 0; j < patternsize.height; j++) {
-                    points.push_back(Vec3f(j, i, 0));
+            for (int i = 0; i < patternsize.height; i++) {
+                for (int j = 0; j < patternsize.width; j++) {
+                    points.push_back(Vec3f(i, -j, 0));
                 }
             }
             

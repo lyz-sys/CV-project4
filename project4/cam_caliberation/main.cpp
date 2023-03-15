@@ -19,30 +19,27 @@ using namespace cv;
 int main(int argc, const char * argv[]) {
     std::filesystem::create_directory("./caliberation_images/");
     
-    VideoCapture cap(1);
+    VideoCapture cap(0);
     if(!cap.isOpened()) {
         printf("Unable to open video device");
         return 0;
     }
+    // get some properties of the image
+    cv::Size refS((int) cap.get(cv::CAP_PROP_FRAME_WIDTH),
+                  (int) cap.get(cv::CAP_PROP_FRAME_HEIGHT));
+    printf("Expected size: %d %d\n", refS.width, refS.height);
     
     namedWindow("video");
-    Mat src, dst;
-    char lastKey = 'n';
+    Mat src, dst, gray;
     
     // initialize some variables for chessboard pattern
-    Mat tmp_caliberation_img;
     vector<Point2f> corners;
     vector<vector<Point2f>> img_corners_list;
     vector<Point3f> points;
     vector<vector<Point3f>> obj_corners_list;
     Size patternsize(6, 9); // hard coded interior number of corners
-    for (int i = 0; i < patternsize.width; i++) {
-        for (int j = 0; j < patternsize.height; j++) {
-            points.push_back(Point3f(j, -i, 0));
-        }
-    }
     TermCriteria termcrit(TermCriteria::COUNT | TermCriteria::EPS, 20, 0.03);
-
+    
     while (true) {
         cap >> src;
         dst = src.clone();
@@ -50,39 +47,39 @@ int main(int argc, const char * argv[]) {
             printf("src is empty\n");
             break;
         }
-
+        cvtColor(src, gray, COLOR_BGR2GRAY);
+        corners.clear();
+        bool patternfound = findChessboardCorners(gray, patternsize, corners,            CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK);
+        if (patternfound) {
+            cornerSubPix(gray, corners, Size(5, 5), Size(-1, -1), termcrit);
+            drawChessboardCorners(dst, patternsize, Mat(corners), patternfound);
+            printf("the total number of corners: %lu\n", corners.size());
+            printf("the first corner: (%f, %f)\n", corners[0].x, corners[0].y);
+        }
+        
         // see if there is a waiting keystroke
         char key = waitKey(25);
-        if (key == -1) {
-            key = lastKey;
-        }
         
         if (key == 'q') {
             break;
-        } else if (key == '1') {
-            Mat gray;
-            cvtColor(src, gray, COLOR_BGR2GRAY);
-            bool patternfound = findChessboardCorners(gray, patternsize, corners,            CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK);
-            if (patternfound) {
-                cornerSubPix(gray, corners, Size(5, 5), Size(-1, -1), termcrit);
-                drawChessboardCorners(dst, patternsize, Mat(corners), patternfound);
-                printf("the total number of corners: %lu\n", corners.size());
-                printf("the first corner: (%f, %f)\n", corners[0].x, corners[0].y);
-                tmp_caliberation_img = src.clone();
-            }
-            lastKey = 'n';
         } else if (key == '2') {
             if (corners.size() != 0) {
+                points.clear();
+                for (int i = 0; i < patternsize.height; i++) {
+                    for (int j = 0; j < patternsize.width; j++) {
+                        points.push_back(Point3f(i, -j, 0));
+                    }
+                }
+                
                 img_corners_list.push_back(corners);
                 obj_corners_list.push_back(points);
                 cout << "print corners' image coords:" << endl;
                 cout << corners << endl;
                 cout << "print coeners' object coords:" << endl;
                 cout << points << endl;
-                imwrite("./caliberation_images/" + to_string(img_corners_list.size()) + ".jpg", tmp_caliberation_img);
+                imwrite("./caliberation_images/" + to_string(img_corners_list.size()) + ".jpg", src);
             }
             printf("currently has %lu pre-trained images\n", img_corners_list.size());
-            lastKey = 'n';
         } else if (key == '3') {
             if (img_corners_list.size() >= 5) {
                 Mat camera_matrix = Mat::eye(3, 3, CV_64FC1);
@@ -108,8 +105,6 @@ int main(int argc, const char * argv[]) {
                 printf("You have to specifiy atleast 5 images for camera caliberation.\n");
                 printf("currently has %lu pre-trained images\n", img_corners_list.size());
             }
-            
-            lastKey = 'n';
         }
         
         imshow("video", dst);
