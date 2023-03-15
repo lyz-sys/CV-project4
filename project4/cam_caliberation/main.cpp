@@ -19,7 +19,7 @@ using namespace cv;
 int main(int argc, const char * argv[]) {
     std::filesystem::create_directory("./caliberation_images/");
     
-    VideoCapture cap(0);
+    VideoCapture cap(1);
     if(!cap.isOpened()) {
         printf("Unable to open video device");
         return 0;
@@ -37,7 +37,7 @@ int main(int argc, const char * argv[]) {
     vector<vector<Point2f>> img_corners_list;
     vector<Point3f> points;
     vector<vector<Point3f>> obj_corners_list;
-    Size patternsize(6, 9); // hard coded interior number of corners
+    Size patternsize(9, 6); // hard coded interior width=9, height=6
     TermCriteria termcrit(TermCriteria::COUNT | TermCriteria::EPS, 20, 0.03);
     
     while (true) {
@@ -67,7 +67,7 @@ int main(int argc, const char * argv[]) {
                 points.clear();
                 for (int i = 0; i < patternsize.height; i++) {
                     for (int j = 0; j < patternsize.width; j++) {
-                        points.push_back(Point3f(i, -j, 0));
+                        points.push_back(Point3f(j, -i, 0));
                     }
                 }
                 

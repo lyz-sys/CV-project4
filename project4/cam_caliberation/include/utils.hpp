@@ -14,6 +14,6 @@
 using namespace cv;
 
 void save_cam_caliberation_info(Mat camera_matrix, Mat dist_coefficients, Mat rvecs, Mat tvecs);
-void read_cam_caliberation_info(Mat &camera_matrix, Mat &dist_coefficients, Mat &rvecs, Mat &tvecs);
+void read_cam_caliberation_info(Mat &camera_matrix, Mat &dist_coefficients);
 
 #endif /* utils_hpp */
