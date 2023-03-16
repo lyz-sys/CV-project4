@@ -20,7 +20,7 @@ using namespace cv;
 int main(int argc, const char * argv[]) {
     std::filesystem::create_directory("./caliberation_images/");
     
-    VideoCapture cap(1);
+    VideoCapture cap(0);
     if(!cap.isOpened()) {
         printf("Unable to open video device");
         return 0;

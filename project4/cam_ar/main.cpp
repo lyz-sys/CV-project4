@@ -18,7 +18,7 @@ using namespace cv;
 
 // this program tries to build AR system on top of the chessboard plane. Press 5 to show the 3D axes. Press 6 to show the pre-build 3D object phantom axe.
 int main(int argc, const char * argv[]) {
-    VideoCapture cap(1);
+    VideoCapture cap(2);
     if(!cap.isOpened()) {
         printf("Unable to open video device");
         return 0;
