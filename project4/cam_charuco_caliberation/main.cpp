@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
     }
 
     bool refindStrategy = parser.get<bool>("rs");
-    int camId = parser.get<int>("ci");
+    int camId = 1;
     String video;
 
     if(parser.has("v")) {

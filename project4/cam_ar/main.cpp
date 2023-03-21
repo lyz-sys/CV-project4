@@ -18,7 +18,7 @@ using namespace cv;
 
 // this program tries to build AR system on top of the chessboard plane. Press 5 to show the 3D axes. Press 6 to show the pre-build 3D object phantom axe.
 int main(int argc, const char * argv[]) {
-    VideoCapture cap(2);
+    VideoCapture cap(1);
     if(!cap.isOpened()) {
         printf("Unable to open video device");
         return 0;
@@ -32,7 +32,7 @@ int main(int argc, const char * argv[]) {
     Size patternsize(9, 6); //interior number of corners
     Mat src, dst, gray, camera_matrix, dist_coefficients, rvecs, tvecs;
     read_cam_caliberation_info(camera_matrix, dist_coefficients);
-
+    char lastkey = 'n';
     while (true) {
         cap >> src;
         dst = src.clone();
@@ -72,7 +72,9 @@ int main(int argc, const char * argv[]) {
         
         // see if there is a waiting keystroke
         char key = waitKey(25);
-        
+        if(key == -1){
+            key = lastkey;
+        }
         vector<Point2f> img_points;
         vector<Point3f> obj_points;
         if (key == 'q') {
@@ -87,6 +89,7 @@ int main(int argc, const char * argv[]) {
                 line(dst, Point(img_points[0].x, img_points[0].y), Point(img_points[1].x, img_points[1].y), Scalar(255, 0, 0), 5);
                 line(dst, Point(img_points[0].x, img_points[0].y), Point(img_points[2].x, img_points[2].y), Scalar(255, 0, 0), 5);
                 line(dst, Point(img_points[0].x, img_points[0].y), Point(img_points[3].x, img_points[3].y), Scalar(255, 0, 0), 5);
+                lastkey = '5';
             }
         } else if (key == '6') {
             // we are going to construct an axe.
@@ -140,6 +143,7 @@ int main(int argc, const char * argv[]) {
 
                 line(dst, Point(img_points[i].x, img_points[i].y), Point(img_points[i + 1].x, img_points[i + 1].y), Scalar(random1, random2, random3), 20);
             }
+            lastkey = '6';
         }
         
         imshow("video", dst);

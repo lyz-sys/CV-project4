@@ -12,7 +12,6 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/imgproc.hpp>
 #include "utils.hpp"
-
 using namespace std;
 using namespace cv;
 
@@ -20,7 +19,7 @@ using namespace cv;
 int main(int argc, const char * argv[]) {
     std::filesystem::create_directory("./caliberation_images/");
     
-    VideoCapture cap(0);
+    VideoCapture cap(1);
     if(!cap.isOpened()) {
         printf("Unable to open video device");
         return 0;
@@ -78,7 +77,7 @@ int main(int argc, const char * argv[]) {
                 cout << corners << endl;
                 cout << "print coeners' object coords:" << endl;
                 cout << points << endl;
-                imwrite("./caliberation_images/" + to_string(img_corners_list.size()) + ".jpg", src);
+                imwrite("./caliberation_images/" + to_string(img_corners_list.size()) + ".jpg", dst);
             }
             printf("currently has %lu pre-trained images\n", img_corners_list.size());
         } else if (key == '3') {

@@ -6,3 +6,7 @@ project4/.DS_Store
 *.plist
 *.xcuserstate
 *.xcbkptlist
+project4/project4.xcodeproj/project.pbxproj
+.DS_Store
+project4/Config.xcconfig
+project4/Config.xcconfig
